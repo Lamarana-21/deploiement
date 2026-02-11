@@ -1,18 +1,23 @@
 const mysql = require("mysql2/promise");
 
-// Configuration du pool de connexions
+// Configuration du pool de connexions optimisée pour TiDB Cloud
 const poolConfig = {
-  host: process.env.DB_HOST || "localhost",
-  port: Number(process.env.DB_PORT) || 3306,
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || "GestionOffreStage",
+  host: process.env.DB_HOST || "gateway01.eu-central-1.prod.aws.tidbcloud.com",
+  port: Number(process.env.DB_PORT) || 4000,
+  user: process.env.DB_USER || "3tJyoYfS9Csuw4Z.root",
+  password: process.env.DB_PASSWORD || "h10DahS0ljwiVPoc",
+  database: process.env.DB_NAME || "github_sample",
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
   namedPlaceholders: true,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
+  // ⚠️ CRITIQUE : TiDB Cloud nécessite SSL pour les connexions externes
+  ssl: {
+    minVersion: 'TLSv1.2',
+    rejectUnauthorized: true 
+  }
 };
 
 const pool = mysql.createPool(poolConfig);
@@ -20,18 +25,19 @@ const pool = mysql.createPool(poolConfig);
 // Tester la connexion au démarrage
 pool.getConnection()
   .then(connection => {
-    console.log(`✅ Connexion à la base de données réussie: ${poolConfig.database}@${poolConfig.host}`);
+    console.log(`✅ Connexion à TiDB réussie: ${poolConfig.database}@${poolConfig.host}`);
     connection.release();
   })
   .catch(err => {
     console.error('❌ Erreur de connexion à la base de données:', err.message);
-    console.error('Vérifiez vos paramètres de connexion dans le fichier .env');
+    console.error('Détails:', err.code);
+    console.error('Vérifiez vos paramètres SSL et vos variables d\'environnement sur Render');
   });
 
 /**
  * Exécute une requête SQL avec gestion d'erreurs améliorée
  * @param {string} sql - Requête SQL à exécuter
- * @param {object} params - Paramètres de la requête (objet pour namedPlaceholders)
+ * @param {object} params - Paramètres de la requête
  * @returns {Promise<Array>} Résultats de la requête
  */
 async function query(sql, params = {}) {
@@ -57,7 +63,6 @@ async function query(sql, params = {}) {
       params: Object.keys(params).length > 0 ? Object.keys(params) : 'aucun',
     });
     
-    // Relancer l'erreur pour qu'elle soit gérée par le middleware
     throw err;
   }
 }
@@ -68,7 +73,9 @@ async function query(sql, params = {}) {
  */
 async function testConnection() {
   try {
-    await pool.query('SELECT 1');
+    const connection = await pool.getConnection();
+    await connection.query('SELECT 1');
+    connection.release();
     return true;
   } catch (err) {
     console.error('[DB] Test de connexion échoué:', err.message);
