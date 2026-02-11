@@ -6,7 +6,7 @@ const poolConfig = {
   port: Number(process.env.DB_PORT) || 4000,
   user: process.env.DB_USER || "3tJyoYfS9Csuw4Z.root",
   password: process.env.DB_PASSWORD || "h10DahS0ljwiVPoc",
-  database: process.env.DB_NAME || "github_sample",
+  database: process.env.DB_NAME || "GestionOffreStage",
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
