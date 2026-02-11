@@ -18,14 +18,18 @@ const AdminNewOffer = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
-
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
       const res = await fetch('https://lamarana-kepler.onrender.com/api/offers', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json' 
+        },
+        // --- CETTE LIGNE EST ESSENTIELLE POUR LES SESSIONS ---
+        credentials: 'include', 
+        // ----------------------------------------------------
         body: JSON.stringify({
           title: formData.title,
           company: formData.company,
@@ -37,11 +41,14 @@ const AdminNewOffer = () => {
           image: formData.image,
         }),
       });
+
       const data = await res.json();
+
       if (res.ok && data.ok) {
         alert('Offre créée avec succès');
         navigate('/');
       } else {
+        // Si le serveur répond 401, data.message sera "Non authentifié"
         alert(data.message || 'Création échouée');
       }
     } catch (err) {

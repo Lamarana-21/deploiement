@@ -6,16 +6,27 @@ const AdminOffers = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // URL de base de ton API
+  const API_BASE_URL = 'https://lamarana-kepler.onrender.com/api/offers';
+
   const load = async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('https://lamarana-kepler.onrender.com/api/offers/admin/all');
+      // Utilisation de l'URL complète et des credentials pour la session
+      const res = await fetch(`${API_BASE_URL}/admin/all`, {
+        credentials: 'include'
+      });
       const data = await res.json();
-      if (res.ok && data.ok) setOffers(data.offers || []);
-      else setError(data.message || 'Impossible de charger les offres');
+      
+      if (res.ok && data.ok) {
+        setOffers(data.offers || []);
+      } else {
+        setError(data.message || 'Impossible de charger les offres');
+      }
     } catch (e) {
-      setError('Erreur réseau');
+      console.error("Load Error:", e);
+      setError('Erreur réseau : Impossible de contacter le serveur');
     } finally {
       setLoading(false);
     }
@@ -28,9 +39,10 @@ const AdminOffers = () => {
   const toggleStatus = async (offer) => {
     const nextStatus = offer.status === 'open' ? 'closed' : 'open';
     try {
-      const res = await fetch(`/api/offers/${offer.id}`, {
+      const res = await fetch(`${API_BASE_URL}/${offer.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Important pour l'autorisation Admin
         body: JSON.stringify({ status: nextStatus }),
       });
       const data = await res.json();
@@ -40,7 +52,7 @@ const AdminOffers = () => {
         alert(data.message || 'Action impossible');
       }
     } catch (e) {
-      alert('Erreur réseau');
+      alert('Erreur réseau lors de la modification du statut');
     }
   };
 
@@ -49,8 +61,9 @@ const AdminOffers = () => {
       return;
     }
     try {
-      const res = await fetch(`/api/offers/${offer.id}`, {
+      const res = await fetch(`${API_BASE_URL}/${offer.id}`, {
         method: 'DELETE',
+        credentials: 'include' // Important pour l'autorisation Admin
       });
       const data = await res.json();
       if (res.ok && data.ok) {
@@ -59,7 +72,7 @@ const AdminOffers = () => {
         alert(data.message || 'Suppression impossible');
       }
     } catch (e) {
-      alert('Erreur réseau');
+      alert('Erreur réseau lors de la suppression');
     }
   };
 
@@ -75,21 +88,26 @@ const AdminOffers = () => {
       {loading && (
         <div className="d-flex align-items-center gap-2">
           <div className="spinner-border text-primary" role="status" aria-hidden="true"></div>
-          <span>Chargement...</span>
+          <span>Chargement des offres...</span>
         </div>
       )}
 
-      {!loading && error && <div className="alert alert-danger">{error}</div>}
+      {!loading && error && (
+        <div className="alert alert-danger d-flex align-items-center">
+          <i className="fas fa-exclamation-triangle me-2"></i>
+          {error}
+        </div>
+      )}
 
       {!loading && !error && offers.length === 0 && (
         <div className="alert alert-info">Aucune offre pour le moment.</div>
       )}
 
       {!loading && !error && offers.length > 0 && (
-        <div className="card">
+        <div className="card shadow-sm">
           <div className="table-responsive">
             <table className="table table-hover mb-0">
-              <thead>
+              <thead className="table-light">
                 <tr>
                   <th>Titre</th>
                   <th>Entreprise</th>
@@ -102,7 +120,7 @@ const AdminOffers = () => {
               <tbody>
                 {offers.map((o) => (
                   <tr key={o.id}>
-                    <td>{o.title}</td>
+                    <td className="fw-bold">{o.title}</td>
                     <td className="text-muted">{o.company}</td>
                     <td>
                       <span className="badge text-bg-info">
@@ -114,7 +132,7 @@ const AdminOffers = () => {
                         {o.status === 'open' ? 'Ouverte' : 'Fermée'}
                       </span>
                     </td>
-                    <td>{o.applications_count}</td>
+                    <td className="text-center">{o.applications_count || 0}</td>
                     <td className="text-end">
                       <div className="btn-group btn-group-sm">
                         <Link className="btn btn-outline-primary" to={`/admin/offers/${o.id}/edit`} title="Modifier">
@@ -126,7 +144,7 @@ const AdminOffers = () => {
                         <button 
                           className={`btn ${o.status === 'open' ? 'btn-outline-warning' : 'btn-outline-success'}`} 
                           onClick={() => toggleStatus(o)}
-                          title={o.status === 'open' ? 'Fermer' : 'Ouvrir'}
+                          title={o.status === 'open' ? 'Fermer l\'offre' : 'Ouvrir l\'offre'}
                         >
                           <i className={`fas ${o.status === 'open' ? 'fa-lock' : 'fa-lock-open'}`}></i>
                         </button>
