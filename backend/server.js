@@ -1,11 +1,11 @@
 const path = require("path");
-
 require("dotenv").config({ path: path.resolve(__dirname, ".env") });
 
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const session = require("express-session");
+const fs = require("fs");
 
 const authRoutes = require("./routes/auth");
 const internshipsRoutes = require("./routes/internships");
@@ -22,32 +22,47 @@ const app = express();
 
 app.disable("x-powered-by");
 app.use(morgan("dev"));
-app.use(express.json({ limit: '10mb' })); // Limite de taille pour éviter les attaques
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
-// Allow cookies/sessions in dev (Vite runs on 5173). Using origin:true reflects the request Origin.
+
+// --- CONFIGURATION CORS MISE À JOUR ---
+const allowedOrigins = [
+  "https://lamarana-vmq9.onrender.com", // Ton URL Frontend Render
+  "http://localhost:5173"              // Développement local
+];
+
 app.use(
   cors({
-    origin: true,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
 
-// Serve uploaded files from the project-level uploads/ directory
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
+// --- CONFIGURATION SESSION SÉCURISÉE ---
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "change_me_in_production",
     resave: false,
     saveUninitialized: false,
+    proxy: true, // Nécessaire pour Render (Reverse Proxy)
     cookie: {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production", // Active HTTPS en prod
+      maxAge: 24 * 60 * 60 * 1000 // 24 heures
     },
   })
 );
 
-// --- API (placeholder) ---
+// --- API ROUTES ---
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "backend", time: new Date().toISOString() });
 });
@@ -62,71 +77,50 @@ app.use("/api/notifications", notificationsRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/contact", contactRoutes);
 
-// --- Frontend static hosting ---
-// In production, serve the built React app from frontend/dist
-// In dev, React runs on Vite (port 5173) with proxy to backend (port 3000)
+// --- GESTION DU FRONTEND ---
 const frontendDistDir = path.resolve(__dirname, "..", "frontend", "dist");
-const fs = require("fs");
 
 if (fs.existsSync(frontendDistDir)) {
   app.use(express.static(frontendDistDir));
-  
-  // SPA fallback: serve index.html for any non-API route
   app.get("*", (req, res) => {
     if (!req.path.startsWith("/api/")) {
       res.sendFile(path.join(frontendDistDir, "index.html"));
     } else {
-      res.status(404).json({ ok: false, message: "Not found" });
+      res.status(404).json({ ok: false, message: "API route not found" });
     }
   });
 } else {
-  console.warn("⚠️  Production build not found. Run 'npm run build' in frontend/ to generate it.");
-  console.warn("⚠️  For development, run Vite on port 5173: cd frontend && npm run dev");
+  app.get("/", (req, res) => {
+    res.json({ 
+        message: "Backend is running. API available at /api", 
+        frontend_status: "Not linked in this service" 
+    });
+  });
   
-  // Dev fallback: just handle API 404s
-  app.use((req, res, next) => {
+  app.use((req, res) => {
     if (req.path.startsWith("/api/")) {
       return notFoundHandler(req, res);
     }
-    res.status(404).send("Frontend not built. Run 'npm run build' in frontend/ or use Vite dev server.");
+    res.status(404).json({ error: "Route non trouvée sur le backend" });
   });
 }
 
-// Middleware de gestion globale des erreurs (doit être après toutes les routes)
 app.use(errorHandler);
 
-// Gestion des erreurs non attrapées
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-process.on('uncaughtException', (error) => {
-  console.error('❌ Uncaught Exception:', error);
-  // Arrêter proprement le serveur en cas d'erreur critique
-  process.exit(1);
-});
-
-const port = Number(process.env.PORT) || 3000;
+// --- DÉMARRAGE DU SERVEUR ---
+const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {
-  console.log(`✅ Backend listening on http://localhost:${port}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`✅ Backend listening on port ${port}`);
 });
 
-// Gestion de l'arrêt propre du serveur
-process.on('SIGTERM', () => {
-  console.log('SIGTERM signal received: closing HTTP server');
+// Clean shutdown
+const gracefulShutdown = () => {
   server.close(() => {
     console.log('HTTP server closed');
     const { closePool } = require('./db');
     closePool().then(() => process.exit(0));
   });
-});
+};
 
-process.on('SIGINT', () => {
-  console.log('SIGINT signal received: closing HTTP server');
-  server.close(() => {
-    console.log('HTTP server closed');
-    const { closePool } = require('./db');
-    closePool().then(() => process.exit(0));
-  });
-});
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
