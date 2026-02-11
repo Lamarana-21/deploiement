@@ -71,21 +71,29 @@ router.get("/", async (req, res) => {
 
 // Admin: list offers (all statuses) with application counts
 router.get("/admin/all", requireAuth, requireRole(["admin"]), async (_req, res) => {
-  const offers = await query(
-    `SELECT o.id,
-            o.title,
-            o.company,
-            o.location,
-            o.deadline,
-            o.status,
-            o.created_at,
-            COUNT(a.id) AS applications_count
-     FROM internship_offers o
-     LEFT JOIN offer_applications a ON a.offer_id = o.id
-     GROUP BY o.id
-     ORDER BY o.created_at DESC`
-  );
-  return res.json({ ok: true, offers });
+  try {
+    const offers = await query(
+      `SELECT o.id,
+              o.title,
+              o.company,
+              o.location,
+              o.deadline,
+              o.status,
+              o.type, -- Ajouté pour le badge dans React
+              o.created_at,
+              COUNT(a.id) AS applications_count
+       FROM internship_offers o
+       LEFT JOIN offer_applications a ON a.offer_id = o.id
+       GROUP BY o.id, o.title, o.company, o.location, o.deadline, o.status, o.type, o.created_at
+       ORDER BY o.created_at DESC`
+    );
+    
+    // On s'assure de renvoyer l'objet attendu par React
+    return res.json({ ok: true, offers });
+  } catch (err) {
+    console.error("Erreur /admin/all:", err);
+    return res.status(500).json({ ok: false, message: "Erreur lors de la récupération des offres" });
+  }
 });
 
 // Admin: list ALL applications (toutes les candidatures)
