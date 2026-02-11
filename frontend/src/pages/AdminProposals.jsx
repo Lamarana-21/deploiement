@@ -11,7 +11,7 @@ const AdminProposals = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('/api/proposals');
+      const res = await fetch('https://lamarana-kepler.onrender.com/api/proposals');
       const data = await res.json();
       if (res.ok && data.ok) {
         setProposals(data.data || []);

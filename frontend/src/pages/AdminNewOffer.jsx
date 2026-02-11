@@ -23,7 +23,7 @@ const AdminNewOffer = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await fetch('/api/offers', {
+      const res = await fetch('https://lamarana-kepler.onrender.com/api/offers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -23,7 +23,7 @@ const AdminEditOffer = () => {
     const fetchOffer = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/offers/${id}`);
+        const res = await fetch(`https://lamarana-kepler.onrender.com/api/offers/${id}`);
         const data = await res.json();
         if (res.ok && data.ok && data.offer) {
           const o = data.offer;

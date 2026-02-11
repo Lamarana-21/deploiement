@@ -10,7 +10,7 @@ const AdminOffers = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('/api/offers/admin/all');
+      const res = await fetch('https://lamarana-kepler.onrender.com/api/offers/admin/all');
       const data = await res.json();
       if (res.ok && data.ok) setOffers(data.offers || []);
       else setError(data.message || 'Impossible de charger les offres');

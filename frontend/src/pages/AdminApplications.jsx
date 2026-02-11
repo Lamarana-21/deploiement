@@ -31,7 +31,7 @@ function AdminApplications() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/offers/admin/applications');
+      const res = await fetch('https://lamarana-kepler.onrender.com/api/offers/admin/applications');
       const data = await res.json();
       if (data.ok) {
         setApplications(data.applications || []);

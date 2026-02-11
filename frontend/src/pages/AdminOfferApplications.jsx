@@ -25,7 +25,7 @@ const AdminOfferApplications = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`/api/offers/${offerId}/applications`);
+      const res = await fetch(`https://lamarana-kepler.onrender.com/api/offers/${offerId}/applications`);
       const data = await res.json();
       if (res.ok && data.ok) {
         setOffer(data.offer);
