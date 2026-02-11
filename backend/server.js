@@ -26,37 +26,48 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 // --- CONFIGURATION CORS MISE À JOUR ---
+// Note : Assure-toi que ces URLs n'ont pas de "/" à la fin
 const allowedOrigins = [
-  "https://lamarana-vmq9.onrender.com", // Ton URL Frontend Render
-  "http://localhost:5173"              // Développement local
+  "https://lamarana-vmq9.onrender.com",
+  "http://localhost:5173"
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      // Autorise les requêtes sans origine (comme Postman ou les outils mobiles) 
+      // ou si l'origine est dans la liste
+      if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.error(`[CORS Error] Origin ${origin} not allowed`);
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true,
+    credentials: true, // Crucial pour les sessions/cookies
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
   })
 );
 
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 // --- CONFIGURATION SESSION SÉCURISÉE ---
+const isProduction = process.env.NODE_ENV === "production";
+
+app.set("trust proxy", 1); // Indispensable sur Render pour que secure: true fonctionne
+
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "change_me_in_production",
+    name: "sid", // Nom personnalisé pour le cookie
+    secret: process.env.SESSION_SECRET || "change_me_in_production_12345",
     resave: false,
     saveUninitialized: false,
-    proxy: true, // Nécessaire pour Render (Reverse Proxy)
+    proxy: true, 
     cookie: {
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production", // Active HTTPS en prod
+      sameSite: isProduction ? "none" : "lax", // "none" est requis pour le cross-site en HTTPS
+      secure: isProduction, // true requiert HTTPS (Render l'offre par défaut)
       maxAge: 24 * 60 * 60 * 1000 // 24 heures
     },
   })
@@ -107,13 +118,11 @@ if (fs.existsSync(frontendDistDir)) {
 
 app.use(errorHandler);
 
-// --- DÉMARRAGE DU SERVEUR ---
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {
-  console.log(`✅ Backend listening on port ${port}`);
+  console.log(`✅ Backend listening on port ${port} (Env: ${process.env.NODE_ENV})`);
 });
 
-// Clean shutdown
 const gracefulShutdown = () => {
   server.close(() => {
     console.log('HTTP server closed');
