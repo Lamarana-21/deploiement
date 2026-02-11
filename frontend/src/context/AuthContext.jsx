@@ -3,30 +3,27 @@ import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext(null);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Au démarrage, on demande au serveur "Qui suis-je ?" via la session
   useEffect(() => {
     checkAuth();
   }, []);
 
   const checkAuth = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const savedUser = localStorage.getItem('user');
-
-      if (token && savedUser) {
-        setUser(JSON.parse(savedUser));
+      const response = await fetch('https://lamarana-kepler.onrender.com/api/auth/me', {
+        credentials: 'include', // Indispensable pour envoyer le cookie de session
+      });
+      const data = await response.json();
+      
+      if (data.ok && data.user) {
+        setUser(data.user);
       } else {
         setUser(null);
       }
@@ -42,33 +39,34 @@ export const AuthProvider = ({ children }) => {
       const response = await fetch('https://lamarana-kepler.onrender.com/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Indispensable pour recevoir le cookie de session
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
       
-      // On vérifie si le serveur a répondu OK et s'il y a un token
-      if (response.ok && data.token) {
-        // --- SAUVEGARDE PHYSIQUE ---
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        
+      // Ici on vérifie 'data.ok' car c'est ce que ton backend renvoie
+      if (response.ok && data.ok) {
         setUser(data.user);
         return { success: true, role: data.user.role };
       }
       
-      return { success: false, message: data.message || 'Erreur de connexion' };
+      return { success: false, message: data.message || 'Identifiants incorrects' };
     } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, message: 'Impossible de contacter le serveur.' };
+      return { success: false, message: 'Erreur de connexion au serveur' };
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    navigate('/login');
+  const logout = async () => {
+    try {
+      await fetch('https://lamarana-kepler.onrender.com/api/auth/logout', { 
+        method: 'POST', 
+        credentials: 'include' 
+      });
+    } finally {
+      setUser(null);
+      navigate('/login');
+    }
   };
 
   return (
