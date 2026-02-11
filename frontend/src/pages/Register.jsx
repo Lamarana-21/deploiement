@@ -28,6 +28,7 @@ const Register = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    
     if (formData.password !== formData.confirmPassword) {
       setError('Les mots de passe ne correspondent pas.');
       return;
@@ -36,7 +37,8 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/auth/register', {
+      // --- MODIFICATION ICI : URL DIRECTE VERS LE BACKEND RENDER ---
+      const res = await fetch('https://lamarana-kepler.onrender.com/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -50,18 +52,20 @@ const Register = () => {
           classe: formData.classe
         }),
       });
+
       const data = await res.json();
+
       if (res.ok && data.ok) {
-        setSuccess('Compte créé avec succès. Vous pouvez maintenant vous connecter.');
+        setSuccess('Compte créé avec succès. Vous allez être redirigé...');
         setTimeout(() => {
-          window.location.href = '/login';
-        }, 700);
+          navigate('/login'); // Utilisation de navigate au lieu de window.location
+        }, 2000);
       } else {
         setError(data.message || "Échec de l'inscription.");
       }
     } catch (err) {
-      console.error(err);
-      setError('Une erreur est survenue. Veuillez réessayer.');
+      console.error("Erreur d'inscription:", err);
+      setError('Impossible de joindre le serveur. Vérifiez votre connexion.');
     } finally {
       setLoading(false);
     }
@@ -217,7 +221,7 @@ const Register = () => {
                         type="text" 
                         className="auth-input" 
                         id="classe"
-                        placeholder="Classe (ex: L2DSI1 G2)"
+                        placeholder="Classe (ex: L2DSI1)"
                         value={formData.classe}
                         onChange={handleChange}
                         required
@@ -254,7 +258,7 @@ const Register = () => {
                   <div 
                     className="auth-input-icon auth-toggle-password" 
                     onClick={() => setShowPassword(!showPassword)}
-                    title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                    style={{ cursor: 'pointer' }}
                   >
                     <i className={`fas ${showPassword ? 'fa-unlock' : 'fa-lock'}`}></i>
                   </div>
@@ -272,7 +276,7 @@ const Register = () => {
                   <div 
                     className="auth-input-icon auth-toggle-password" 
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    title={showConfirmPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                    style={{ cursor: 'pointer' }}
                   >
                     <i className={`fas ${showConfirmPassword ? 'fa-unlock' : 'fa-lock'}`}></i>
                   </div>
@@ -280,7 +284,7 @@ const Register = () => {
                     type={showConfirmPassword ? "text" : "password"} 
                     className="auth-input" 
                     id="confirmPassword"
-                    placeholder="Confirmer le mot de passe"
+                    placeholder="Confirmer"
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     required
