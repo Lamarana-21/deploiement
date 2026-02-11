@@ -14,7 +14,7 @@ const AdminOffers = () => {
       setLoading(true);
       setError(null);
       // Utilisation de l'URL complète et des credentials pour la session
-      const res = await fetch(`${API_BASE_URL}/admin/all`, {
+      const res = await fetch(`https://lamarana-kepler.onrender.com/api/offers/admin/all`, {
         credentials: 'include'
       });
       const data = await res.json();
