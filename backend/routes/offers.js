@@ -68,8 +68,6 @@ router.get("/", async (req, res) => {
     return res.status(500).json({ ok: false, message: "Erreur serveur" });
   }
 });
-
-// Admin: list offers (all statuses) with application counts
 router.get("/admin/all", requireAuth, requireRole(["admin"]), async (_req, res) => {
   try {
     const offers = await query(
@@ -78,21 +76,24 @@ router.get("/admin/all", requireAuth, requireRole(["admin"]), async (_req, res) 
               o.company,
               o.location,
               o.deadline,
+              o.description,
+              o.requirements,
+              o.type,
               o.status,
-              o.type, -- Ajouté pour le badge dans React
+              o.image,
               o.created_at,
               COUNT(a.id) AS applications_count
        FROM internship_offers o
        LEFT JOIN offer_applications a ON a.offer_id = o.id
-       GROUP BY o.id, o.title, o.company, o.location, o.deadline, o.status, o.type, o.created_at
+       GROUP BY o.id, o.title, o.company, o.location, o.deadline, o.description, 
+                o.requirements, o.type, o.status, o.image, o.created_at
        ORDER BY o.created_at DESC`
     );
     
-    // On s'assure de renvoyer l'objet attendu par React
     return res.json({ ok: true, offers });
   } catch (err) {
-    console.error("Erreur /admin/all:", err);
-    return res.status(500).json({ ok: false, message: "Erreur lors de la récupération des offres" });
+    console.error("Erreur SQL détaillée:", err);
+    return res.status(500).json({ ok: false, message: "Erreur base de données" });
   }
 });
 
