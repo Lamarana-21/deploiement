@@ -20,62 +20,66 @@ const { errorHandler, notFoundHandler } = require("./middleware/errorHandler");
 
 const app = express();
 
+// --- CONFIGURATION DE BASE ---
 app.disable("x-powered-by");
 app.use(morgan("dev"));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
-// --- CONFIGURATION CORS MISE À JOUR ---
-// Note : Assure-toi que ces URLs n'ont pas de "/" à la fin
+// --- CONFIGURATION CORS BLINDÉE ---
 const allowedOrigins = [
   "https://lamarana-vmq9.onrender.com",
   "http://localhost:5173"
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Autorise les requêtes sans origine (comme Postman ou les outils mobiles) 
-      // ou si l'origine est dans la liste
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.error(`[CORS Error] Origin ${origin} not allowed`);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true, // Crucial pour les sessions/cookies
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
-  })
-);
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Autorise les requêtes sans origine (Postman) ou présentes dans la liste
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.error(`[CORS Blocked] Origin: ${origin}`);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  optionsSuccessStatus: 200 // Réponse propre pour les navigateurs anciens
+};
+
+app.use(cors(corsOptions));
+// Gérer explicitement les requêtes OPTIONS (Preflight) avant les routes
+app.options('*', cors(corsOptions));
 
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
-// --- CONFIGURATION SESSION SÉCURISÉE ---
+// --- CONFIGURATION SESSION (OPTIMISÉE RENDER) ---
 const isProduction = process.env.NODE_ENV === "production";
 
-app.set("trust proxy", 1); // Indispensable sur Render pour que secure: true fonctionne
+// Indispensable sur Render pour que les cookies 'secure' soient transmis via le proxy
+app.set("trust proxy", 1); 
 
 app.use(
   session({
-    name: "sid", // Nom personnalisé pour le cookie
-    secret: process.env.SESSION_SECRET || "change_me_in_production_12345",
+    name: "lamarana_sid", 
+    secret: process.env.SESSION_SECRET || "une_cle_tres_secrete_12345",
     resave: false,
     saveUninitialized: false,
     proxy: true, 
     cookie: {
       httpOnly: true,
-      sameSite: isProduction ? "none" : "lax", // "none" est requis pour le cross-site en HTTPS
-      secure: isProduction, // true requiert HTTPS (Render l'offre par défaut)
-      maxAge: 24 * 60 * 60 * 1000 // 24 heures
+      // 'none' est obligatoire pour le cross-site (frontend et backend sur domaines différents)
+      sameSite: isProduction ? "none" : "lax", 
+      secure: isProduction, // HTTPS obligatoire en production
+      maxAge: 24 * 60 * 60 * 1000 // 1 jour
     },
   })
 );
 
 // --- API ROUTES ---
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, service: "backend", time: new Date().toISOString() });
+  res.json({ ok: true, env: process.env.NODE_ENV, service: "backend" });
 });
 
 app.use("/api/auth", authRoutes);
@@ -102,17 +106,7 @@ if (fs.existsSync(frontendDistDir)) {
   });
 } else {
   app.get("/", (req, res) => {
-    res.json({ 
-        message: "Backend is running. API available at /api", 
-        frontend_status: "Not linked in this service" 
-    });
-  });
-  
-  app.use((req, res) => {
-    if (req.path.startsWith("/api/")) {
-      return notFoundHandler(req, res);
-    }
-    res.status(404).json({ error: "Route non trouvée sur le backend" });
+    res.json({ message: "Backend is running. API at /api" });
   });
 }
 
@@ -120,12 +114,13 @@ app.use(errorHandler);
 
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {
-  console.log(`✅ Backend listening on port ${port} (Env: ${process.env.NODE_ENV})`);
+  console.log(`✅ Server ready on port ${port} in ${process.env.NODE_ENV || 'development'} mode`);
 });
 
+// Arrêt propre
 const gracefulShutdown = () => {
   server.close(() => {
-    console.log('HTTP server closed');
+    console.log('Server terminated');
     const { closePool } = require('./db');
     closePool().then(() => process.exit(0));
   });
