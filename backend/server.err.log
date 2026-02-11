@@ -1,0 +1,2 @@
+⚠️  Production build not found. Run 'npm run build' in frontend/ to generate it.
+⚠️  For development, run Vite on port 5173: cd frontend && npm run dev

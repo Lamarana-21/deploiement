@@ -1,0 +1,564 @@
+/* ====================================
+   RESPONSIVE DESIGN IMPROVEMENTS
+   ==================================== */
+
+/* Utility Classes for Responsive Design */
+:root {
+  --transition: all 0.3s ease;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Amélioration des breakpoints Bootstrap */
+
+/* Extra-small devices (landscape phones, < 576px) */
+@media (max-width: 575.98px) {
+  /* Global improvements */
+  :root {
+    --bs-body-font-size: 0.875rem;
+  }
+
+  body {
+    font-size: 0.875rem;
+  }
+
+  /* Spacing utilities */
+  .mx-auto {
+    margin-right: 0.5rem !important;
+    margin-left: 0.5rem !important;
+  }
+
+  .px-4 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .py-3 {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+
+  /* Flex utilities */
+  .d-flex.flex-wrap {
+    flex-wrap: wrap;
+  }
+
+  .gap-2 {
+    gap: 0.5rem !important;
+  }
+
+  /* Navbar improvements */
+  .navbar {
+    padding: 0.35rem 0 !important;
+  }
+
+  .navbar-brand {
+    font-size: 1rem;
+  }
+
+  /* Heading responsiveness */
+  .page-header, .section-header {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .display-1 {
+    font-size: 1.5rem !important;
+  }
+
+  .display-2 {
+    font-size: 1.3rem !important;
+  }
+
+  .display-3 {
+    font-size: 1.15rem !important;
+  }
+
+  /* Button improvements */
+  .btn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .btn-lg {
+    font-size: 0.95rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .btn-sm {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  /* Card improvements */
+  .card {
+    margin-bottom: 1rem;
+  }
+
+  .card-body {
+    padding: 0.75rem;
+  }
+
+  .card-header {
+    padding: 0.75rem;
+  }
+
+  /* Table improvements */
+  .table {
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .table-responsive {
+    border: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table thead th {
+    font-size: 0.7rem;
+    padding: 0.35rem 0.25rem;
+  }
+
+  .table tbody td {
+    padding: 0.35rem 0.25rem;
+  }
+
+  /* Form improvements */
+  .form-group,
+  .form-control,
+  .form-select,
+  .form-check {
+    font-size: 0.9rem;
+  }
+
+  .form-control,
+  .form-select {
+    padding: 0.4rem 0.6rem;
+  }
+
+  /* Input responsiveness - important for mobile */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important; /* Prevent zoom on iOS */
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 0.35rem !important;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  }
+
+  /* Alert improvements */
+  .alert {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  /* Badge improvements */
+  .badge {
+    font-size: 0.65rem;
+    padding: 0.3em 0.5em;
+  }
+
+  /* Breadcrumb improvements */
+  .breadcrumb {
+    font-size: 0.8rem;
+    padding: 0.5rem 0;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Pagination improvements */
+  .pagination {
+    font-size: 0.8rem;
+    gap: 0.2rem;
+  }
+
+  .page-link {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.75rem;
+  }
+
+  /* Modal improvements */
+  .modal-content {
+    border-radius: 0.5rem;
+  }
+
+  .modal-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .modal-body {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .modal-footer {
+    padding: 0.5rem;
+    gap: 0.3rem;
+  }
+
+  .modal-title {
+    font-size: 1rem;
+  }
+
+  /* Dropdown improvements */
+  .dropdown-menu {
+    font-size: 0.85rem;
+  }
+
+  .dropdown-item {
+    padding: 0.3rem 1rem;
+  }
+
+  /* Image responsiveness */
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .img-fluid {
+    max-width: 100%;
+  }
+
+  /* Spinner improvements */
+  .spinner-border {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-width: 0.2em;
+  }
+
+  .spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.15em;
+  }
+
+  /* List improvements */
+  .list-group-item {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  /* Navigation improvements */
+  .nav {
+    gap: 0.5rem;
+  }
+
+  .nav-link {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .nav-link.active {
+    font-weight: 600;
+  }
+
+  /* Sidebar improvements */
+  #layoutSidenav_nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .sb-sidenav {
+    position: relative;
+  }
+
+  .sb-sidenav-menu {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0.5rem 0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sb-sidenav .nav-link {
+    white-space: nowrap;
+    padding: 0.5rem 1rem;
+  }
+
+  .sb-sidenav-menu-heading {
+    display: none;
+  }
+
+  /* Content improvements */
+  main {
+    min-height: calc(100vh - 56px);
+  }
+
+  .container-fluid {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  /* Footer improvements */
+  footer {
+    font-size: 0.8rem;
+  }
+
+  footer .row {
+    gap: 1rem;
+  }
+
+  /* Tooltip improvements */
+  .tooltip-inner {
+    font-size: 0.75rem;
+  }
+
+  /* Popover improvements */
+  .popover {
+    font-size: 0.85rem;
+  }
+
+  .popover-header {
+    font-size: 0.9rem;
+    padding: 0.5rem;
+  }
+}
+
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .table {
+    font-size: 0.8rem;
+  }
+
+  .form-control,
+  .form-select {
+    font-size: 0.95rem;
+  }
+
+  .btn {
+    padding: 0.45rem 0.9rem;
+    font-size: 0.9rem;
+  }
+
+  .card-body {
+    padding: 0.9rem;
+  }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .container-fluid {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .table {
+    font-size: 0.85rem;
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  /* Sidebar adjustments */
+  .sb-sidenav {
+    width: 225px;
+  }
+
+  #layoutSidenav_content {
+    margin-left: 225px;
+  }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+  .container-fluid {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  /* Sidebar in desktop */
+  .sb-sidenav {
+    width: 250px;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  #layoutSidenav_content {
+    margin-left: 250px;
+  }
+
+  .sb-sidenav-menu {
+    flex-direction: column;
+  }
+
+  .sb-sidenav .nav-link {
+    white-space: normal;
+  }
+
+  .sb-sidenav-menu-heading {
+    display: block;
+  }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+  .container-fluid {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .sb-sidenav {
+    width: 250px;
+  }
+
+  #layoutSidenav_content {
+    margin-left: 250px;
+  }
+
+  .page-header {
+    margin-bottom: 2rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .navbar,
+  .sb-sidenav,
+  footer,
+  .btn,
+  .modal,
+  .dropdown,
+  .popover,
+  .tooltip {
+    display: none !important;
+  }
+
+  .page-break {
+    page-break-after: always;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+}
+
+/* Touch device improvements */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets */
+  .btn,
+  .nav-link,
+  .form-check-input,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Remove hover states on touch devices */
+  .btn:hover,
+  .nav-link:hover,
+  .dropdown-item:hover {
+    background-color: inherit;
+    transform: none;
+  }
+
+  /* Better touch feedback */
+  .btn:active,
+  .nav-link:active,
+  .form-check-input:active {
+    opacity: 0.7;
+  }
+}
+
+/* High DPI displays (Retina) */
+@media (-webkit-min-device-pixel-ratio: 2),
+       (min-resolution: 192dpi) {
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* SVG and icons might look better with smoothing */
+  .fa,
+  svg {
+    shape-rendering: crispEdges;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bs-body-bg: #1a1a1a;
+    --bs-body-color: #e0e0e0;
+  }
+
+  body {
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+  }
+
+  .card {
+    background-color: #2d2d2d;
+    border-color: #404040;
+  }
+
+  .form-control,
+  .form-select {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #404040;
+  }
+
+  .table {
+    color: #e0e0e0;
+  }
+
+  .table thead {
+    border-bottom-color: #404040;
+  }
+
+  .table tbody + tbody {
+    border-top-color: #404040;
+  }
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

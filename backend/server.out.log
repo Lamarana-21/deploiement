@@ -1,0 +1,3 @@
+Backend listening on http://localhost:3000
+[0mGET /api/health [32m200[0m 11.714 ms - 65[0m
+[0mHEAD /uploads/avatars/does-not-exist.jpg [33m404[0m 4.401 ms - 76[0m
