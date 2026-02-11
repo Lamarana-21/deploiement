@@ -22,12 +22,11 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/auth/me', {
-        credentials: 'include',
-      });
-      const data = await response.json();
-      if (data.ok && data.user) {
-        setUser(data.user);
+      const token = localStorage.getItem('token');
+      const savedUser = localStorage.getItem('user');
+
+      if (token && savedUser) {
+        setUser(JSON.parse(savedUser));
       } else {
         setUser(null);
       }
@@ -43,13 +42,17 @@ export const AuthProvider = ({ children }) => {
       const response = await fetch('https://lamarana-kepler.onrender.com/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
       
-      if (response.ok && data.ok) {
+      // On vérifie si le serveur a répondu OK et s'il y a un token
+      if (response.ok && data.token) {
+        // --- SAUVEGARDE PHYSIQUE ---
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
         setUser(data.user);
         return { success: true, role: data.user.role };
       }
@@ -57,12 +60,13 @@ export const AuthProvider = ({ children }) => {
       return { success: false, message: data.message || 'Erreur de connexion' };
     } catch (error) {
       console.error('Login error:', error);
-      return { success: false, message: 'Impossible de contacter le serveur. Vérifiez votre connexion.' };
+      return { success: false, message: 'Impossible de contacter le serveur.' };
     }
   };
 
-  const logout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setUser(null);
     navigate('/login');
   };
